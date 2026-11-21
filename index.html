@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>GSTE Web | 本機樂譜轉換</title><link rel="stylesheet" href="./style.css"></head>
+<body><header><div class="wrap head"><div><div class="brand">GSTE <span>WEB</span></div><div class="tagline">Guitar Score Transcription Engine</div></div><span class="privacy">◉ 本機處理 · 不上傳樂譜</span></div></header>
+<main class="wrap"><div class="hero"><p class="eyebrow">BROWSER-BASED MUSIC ARRANGEMENT</p><h1>把樂譜轉換成<br><em>指彈吉他編曲</em></h1><p>直接在瀏覽器使用 GSTE v0.4 編曲核心。選擇 MusicXML、設定模式，完成後下載包含 TAB、五線譜與和弦資訊的轉換結果。</p></div>
+<div class="layout"><section class="panel"><div class="panelhead"><span class="step">01</span><h2>選擇轉換模式</h2></div><div class="modes" role="radiogroup" aria-label="轉換模式"><label class="mode"><input type="radio" name="mode" value="melody" checked><strong>單旋律</strong><small>單旋律 MusicXML → 指彈編曲</small></label><label class="mode"><input type="radio" name="mode" value="piano"><strong>雙手鋼琴</strong><small>右手主旋律 + 左手伴奏</small></label><label class="mode"><input type="radio" name="mode" value="ensemble"><strong>團譜</strong><small>主旋律 + 多軌伴奏</small></label></div>
+<div class="panelhead second"><span class="step">02</span><h2>匯入 MusicXML</h2></div><label class="filelabel" for="melody">主旋律樂譜 <span>必要</span></label><input id="melody" type="file" accept=".xml,.musicxml"><div class="hint">請選擇獨立主旋律軌。此版本不會自動從完整總譜拆分聲部。</div>
+<div id="piano-fields" hidden><label class="filelabel" for="left">鋼琴左手伴奏 <span>必要</span></label><input id="left" type="file" accept=".xml,.musicxml"></div>
+<div id="ensemble-fields" hidden><div class="fieldtop"><label class="filelabel">團譜伴奏軌（依優先順序）</label><button type="button" class="subbutton" id="add-track">＋ 新增軌道</button></div><div id="track-list"></div><p class="hint">最多 4 軌。每軌需先由 MuseScore 等工具匯出為獨立 MusicXML。</p></div>
+<label class="filelabel" for="tuning">吉他調弦方式</label><select id="tuning"><option value="standard">標準調弦（E A D G B E）</option><option value="drop_d">Drop D（D A D G B E）</option></select>
+<div class="panelhead second"><span class="step">03</span><h2>開始本機轉換</h2></div><div id="melody-options"><label class="filelabel" for="accompaniment">單旋律伴奏模式</label><select id="accompaniment"><option value="AUTO_GENERATED">自動產生伴奏</option><option value="NONE">不產生伴奏</option></select></div>
+<button id="convert" class="primary" disabled>初始化中…</button><div id="status" class="status" role="status" aria-live="polite">準備載入編曲引擎…</div><div class="actions" id="actions" hidden><button id="download" class="primary">下載 GSTE_TAB.musicxml</button><button id="report" class="subbutton">下載轉換報告</button><button id="context-download" class="subbutton" hidden>下載 GAR Context JSON</button><button id="context-open" class="subbutton" hidden>在 GAR 檢視器開啟本次結果</button></div></section>
+<aside class="side"><div class="info"><div class="infoicon">⌁</div><h3>資料留在你的裝置</h3><p>樂譜由瀏覽器讀取，使用 WebAssembly 在本機執行 Python 編曲核心；網站伺服器只提供程式資源。</p></div><div class="info"><div class="infoicon">♫</div><h3>保留桌面版編曲核心</h3><p>輸出 <code>GSTE_TAB.musicxml</code>。結果仍應在 MuseScore 中檢查。</p></div><div class="info"><div class="infoicon">ⓘ</div><h3>目前支援</h3><p>僅支援 <code>.musicxml</code>。不支援 MIDI、MXL、圖片、音訊或線上試聽。需連網載入執行環境。</p></div></aside></div><section class="panel gar-panel" id="gar-panel"><div class="panelhead"><span class="step">GAR</span><h2>獨立編曲索引 · 唯讀</h2></div>
+<p class="hint">只需匯入包含 score_notes 的 GSTE Editor Context JSON。任意檔名皆可，不檢查 TAB 檔名或外部 SHA-256。僅供指板參考，不修改樂譜。</p>
+<label class="filelabel" for="gar-file">匯入 Context JSON</label><input id="gar-file" type="file" accept=".json,application/json">
+<div id="gar-status" class="status" role="status">等待載入 JSON…</div>
+<div id="gar-view" hidden>
+<div class="gar-controls"><label>小節 <select id="gar-measure"></select></label><label>查詢和弦 <input id="gar-chord" type="text" value="C" maxlength="40"></label><button class="subbutton" id="gar-refresh">更新索引</button></div>
+<p id="gar-summary" class="hint"></p><h3>本小節 TAB（藍色旋律可點選或框選；Ctrl / ⌘ 多選）</h3>
+<div class="gar-scroll"><svg id="gar-tab" viewBox="0 0 760 175" aria-label="本小節 TAB" role="img"></svg></div>
+<h3>和弦指板索引</h3><div id="gar-nearby" class="gar-positions"></div>
+<h3>三度／六度／八度雙音候選</h3><div id="gar-doubles" class="gar-positions">請先選取旋律音符。</div>
+<p class="hint">所有建議均未經完整 GSTE Joint Optimizer、同時起音、時值或手型可行性驗證。</p>
+</div></section>
+<footer>GSTE Web · Client-side proof of concept · 不含伺服器端轉換</footer></main><script src="./app.js" defer></script></body></html>
